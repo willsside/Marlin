@@ -26,10 +26,10 @@
  * Rewrite and Extui Port by Jacob Myers
  */
 
-#include "dwin.h"
+#include "../dwin_lcd.h"
 #include "rotary_encoder.h"
-#include "../../libs/BL24CXX.h"
-#include "../../inc/MarlinConfigPre.h"
+#include "../../../libs/BL24CXX.h"
+#include "../../../inc/MarlinConfigPre.h"
 
 enum processID : uint8_t {
   Main, Print, Menu, Value, Option, File, Popup, Confirm, Wait
@@ -311,7 +311,9 @@ public:
   void Draw_Print_Screen();
   void Draw_Print_Filename(bool reset=false);
   void Draw_Print_ProgressBar();
-  void Draw_Print_ProgressRemain();
+  #if ENABLED(USE_M73_REMAINING_TIME)
+    void Draw_Print_ProgressRemain();
+  #endif
   void Draw_Print_ProgressElapsed();
   void Draw_Print_confirm();
   void Draw_SD_Item(uint8_t item, uint8_t row);

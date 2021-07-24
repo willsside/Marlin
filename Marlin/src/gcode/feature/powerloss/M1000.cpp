@@ -30,9 +30,8 @@
 #include "../../../lcd/marlinui.h"
 #if ENABLED(EXTENSIBLE_UI)
   #include "../../../lcd/extui/ui_api.h"
-#endif
-#if ENABLED(DWIN_CREALITY_LCD)
-  #include "../../../lcd/dwin/creality_dwin.h" // Temporary fix until it can be better implemented
+#elif ENABLED(DWIN_CREALITY_LCD)
+  #include "../../../lcd/dwin/e3v2/dwin.h" // Temporary fix until it can be better implemented
 #endif
 
 #define DEBUG_OUT ENABLED(DEBUG_POWER_LOSS_RECOVERY)

@@ -74,7 +74,7 @@
 #endif
 
 #if ENABLED(DWIN_CREALITY_LCD)
-  #include "../lcd/dwin/creality_dwin.h"
+  #include "../lcd/dwin/e3v2/dwin.h"
 #endif
 
 #if HAS_SERVOS
@@ -360,7 +360,7 @@ typedef struct SettingsDataStruct {
   //
   // HAS_LCD_BRIGHTNESS
   //
-  uint8_t lcd_brightness;                                 // M251 B
+  uint8_t lcd_brightness;                               // M251 B
 
   //
   // Controller fan settings
@@ -1015,14 +1015,7 @@ void MarlinSettings::postprocess() {
     //
     {
       _FIELD_TEST(lcd_contrast);
-
-      const int16_t lcd_contrast =
-        #if HAS_LCD_CONTRAST
-          ui.contrast
-        #else
-          127
-        #endif
-      ;
+      const int16_t lcd_contrast = TERN(HAS_LCD_CONTRAST, ui.contrast, 127);
       EEPROM_WRITE(lcd_contrast);
     }
 
@@ -1031,14 +1024,7 @@ void MarlinSettings::postprocess() {
     //
     {
       _FIELD_TEST(lcd_brightness);
-
-      const uint8_t lcd_brightness =
-        #if HAS_LCD_BRIGHTNESS
-          ui.brightness
-        #else
-          255
-        #endif
-      ;
+      const uint8_t lcd_brightness = TERN(HAS_LCD_BRIGHTNESS, ui.brightness, 255);
       EEPROM_WRITE(lcd_brightness);
     }
 
@@ -1363,25 +1349,25 @@ void MarlinSettings::postprocess() {
     // Extensible UI User Data
     //
     #if ENABLED(EXTENSIBLE_UI)
-      {
-        char extui_data[ExtUI::eeprom_data_size] = { 0 };
-        ExtUI::onStoreSettings(extui_data);
-        _FIELD_TEST(extui_data);
-        EEPROM_WRITE(extui_data);
-      }
+    {
+      char extui_data[ExtUI::eeprom_data_size] = { 0 };
+      ExtUI::onStoreSettings(extui_data);
+      _FIELD_TEST(extui_data);
+      EEPROM_WRITE(extui_data);
+    }
     #endif
 
     //
     // Creality UI Settings
     //
     #if ENABLED(DWIN_CREALITY_LCD)
-        {
-          char dwin_settings[CrealityDWIN.eeprom_data_size] = { 0 };
-          CrealityDWIN.Save_Settings(dwin_settings);
-          _FIELD_TEST(dwin_settings);
-          EEPROM_WRITE(dwin_settings);
-        }
-      #endif
+    {
+      char dwin_settings[CrealityDWIN.eeprom_data_size] = { 0 };
+      CrealityDWIN.Save_Settings(dwin_settings);
+      _FIELD_TEST(dwin_settings);
+      EEPROM_WRITE(dwin_settings);
+    }
+    #endif
 
     //
     // Case Light Brightness
@@ -1897,9 +1883,7 @@ void MarlinSettings::postprocess() {
         _FIELD_TEST(lcd_brightness);
         uint8_t lcd_brightness;
         EEPROM_READ(lcd_brightness);
-        if (!validating) {
-          TERN_(HAS_LCD_BRIGHTNESS, ui.set_brightness(lcd_brightness));
-        }
+        TERN_(HAS_LCD_BRIGHTNESS, if (!validating) ui.set_brightness(lcd_brightness));
       }
 
       //
@@ -2256,25 +2240,24 @@ void MarlinSettings::postprocess() {
       // Extensible UI User Data
       //
       #if ENABLED(EXTENSIBLE_UI)
-        // This is a significant hardware change; don't reserve EEPROM space when not present
-        {
-          const char extui_data[ExtUI::eeprom_data_size] = { 0 };
-          _FIELD_TEST(extui_data);
-          EEPROM_READ(extui_data);
-          if (!validating) ExtUI::onLoadSettings(extui_data);
-        }
+      { // This is a significant hardware change; don't reserve EEPROM space when not present
+        const char extui_data[ExtUI::eeprom_data_size] = { 0 };
+        _FIELD_TEST(extui_data);
+        EEPROM_READ(extui_data);
+        if (!validating) ExtUI::onLoadSettings(extui_data);
+      }
       #endif
 
       //
       // Creality UI Settings
       //
       #if ENABLED(DWIN_CREALITY_LCD)
-        {
-          const char dwin_settings[CrealityDWIN.eeprom_data_size] = { 0 };
-          _FIELD_TEST(dwin_settings);
-          EEPROM_READ(dwin_settings);
-          if (!validating) CrealityDWIN.Load_Settings(dwin_settings);
-        }
+      {
+        const char dwin_settings[CrealityDWIN.eeprom_data_size] = { 0 };
+        _FIELD_TEST(dwin_settings);
+        EEPROM_READ(dwin_settings);
+        if (!validating) CrealityDWIN.Load_Settings(dwin_settings);
+      }
       #endif
 
       //
