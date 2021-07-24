@@ -65,7 +65,7 @@ inline void DWIN_Long(size_t &i, const uint32_t lval) {
   DWIN_SendBuf[++i] = lval & 0xFF;
 }
 
-inline void DWIN_String(size_t &i, char * const string) {
+inline void DWIN_String(size_t &i, const char * const string) {
   const size_t len = _MIN(sizeof(DWIN_SendBuf) - i, strlen(string));
   memcpy(&DWIN_SendBuf[i+1], string, len);
   i += len;
@@ -127,7 +127,7 @@ bool DWIN_Handshake(void) {
 void DWIN_Backlight_SetLuminance(const uint8_t luminance) {
   size_t i = 0;
   DWIN_Byte(i, 0x30);
-  DWIN_Byte(i, _MAX(luminance, 0x1F));
+  DWIN_Byte(i, luminance);
   DWIN_Send(i);
 }
 
@@ -161,12 +161,14 @@ void DWIN_Frame_Clear(const uint16_t color) {
 }
 
 // Draw a point
+//  color: Pixel segment color
 //  width: point width   0x01-0x0F
 //  height: point height 0x01-0x0F
 //  x,y: upper left point
-void DWIN_Draw_Point(uint8_t width, uint8_t height, uint16_t x, uint16_t y) {
+void DWIN_Draw_Point(uint16_t color, uint8_t width, uint8_t height, uint16_t x, uint16_t y) {
   size_t i = 0;
   DWIN_Byte(i, 0x02);
+  DWIN_Word(i, color);
   DWIN_Byte(i, width);
   DWIN_Byte(i, height);
   DWIN_Word(i, x);
@@ -207,6 +209,20 @@ void DWIN_Draw_Rectangle(uint8_t mode, uint16_t color,
   DWIN_Send(i);
 }
 
+//Color: color
+//x/y: Upper-left coordinate of the first pixel
+void DWIN_Draw_DegreeSymbol(uint16_t Color, uint16_t x, uint16_t y)	{
+  	DWIN_Draw_Point(Color, 1, 1, x + 1, y);		               	
+  	DWIN_Draw_Point(Color, 1, 1, x + 2, y);	
+  	DWIN_Draw_Point(Color, 1, 1, x, y + 1);
+		DWIN_Draw_Point(Color, 1, 1, x + 3, y + 1);
+  	DWIN_Draw_Point(Color, 1, 1, x, y + 2);
+		DWIN_Draw_Point(Color, 1, 1, x + 3, y + 2);
+    DWIN_Draw_Point(Color, 1, 1, x + 1, y + 3);		               	
+  	DWIN_Draw_Point(Color, 1, 1, x + 2, y + 3);	
+}
+
+
 // Move a screen area
 //  mode: 0, circle shift; 1, translation
 //  dir: 0=left, 1=right, 2=up, 3=down
@@ -239,7 +255,7 @@ void DWIN_Frame_AreaMove(uint8_t mode, uint8_t dir, uint16_t dis,
 //  x/y: Upper-left coordinate of the string
 //  *string: The string
 void DWIN_Draw_String(bool widthAdjust, bool bShow, uint8_t size,
-                      uint16_t color, uint16_t bColor, uint16_t x, uint16_t y, char *string) {
+                      uint16_t color, uint16_t bColor, uint16_t x, uint16_t y, const char * string) {
   size_t i = 0;
   DWIN_Byte(i, 0x11);
   // Bit 7: widthAdjust
